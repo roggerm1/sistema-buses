@@ -1,0 +1,231 @@
+@baseUrl = http://localhost:3000/api
+@token = {{login.response.body.data.token}}
+
+### Health check
+GET http://localhost:3000/
+
+### --- AUTH ---
+
+### Register
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "nombres": "Test",
+  "apellidos": "User",
+  "correo": "test@test.com",
+  "clave": "123456"
+}
+
+### Login
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "correo": "admin@sistema.com",
+  "clave": "Admin123"
+}
+
+### Get me
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{token}}
+
+### Logout
+POST {{baseUrl}}/auth/logout
+
+### --- USERS (Admin) ---
+
+### Change user role
+PATCH {{baseUrl}}/auth/users/:id/role
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "tipoUsuario": "Admin"
+}
+
+### --- BUSES (Admin) ---
+
+### Get all buses
+GET {{baseUrl}}/buses
+Authorization: Bearer {{token}}
+
+### Create bus
+POST {{baseUrl}}/buses
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "numeroPlaca": "ABC-123",
+  "nombre": "Bus Express 1",
+  "capacidad": 12
+}
+
+### Get bus by ID
+GET {{baseUrl}}/buses/:id
+Authorization: Bearer {{token}}
+
+### Update bus
+PUT {{baseUrl}}/buses/:id
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "nombre": "Bus Express 1 Updated",
+  "disponible": false
+}
+
+### Delete bus
+DELETE {{baseUrl}}/buses/:id
+Authorization: Bearer {{token}}
+
+### --- RUTAS (Admin) ---
+
+### Get all rutas
+GET {{baseUrl}}/rutas
+Authorization: Bearer {{token}}
+
+### Create ruta
+POST {{baseUrl}}/rutas
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "origen": "Tegucigalpa",
+  "destino": "San Pedro Sula"
+}
+
+### Get ruta by ID
+GET {{baseUrl}}/rutas/:id
+Authorization: Bearer {{token}}
+
+### Update ruta
+PUT {{baseUrl}}/rutas/:id
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "origen": "Tegucigalpa",
+  "destino": "La Ceiba"
+}
+
+### Delete ruta
+DELETE {{baseUrl}}/rutas/:id
+Authorization: Bearer {{token}}
+
+### --- VIAJES (Admin) ---
+
+### Get all viajes
+GET {{baseUrl}}/viajes
+Authorization: Bearer {{token}}
+
+### Create viaje
+POST {{baseUrl}}/viajes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "idBus": "REPLACE_WITH_BUS_ID",
+  "idRuta": "REPLACE_WITH_RUTA_ID",
+  "fechaSalida": "2026-02-20",
+  "horaSalida": "08:00",
+  "fechaLlegada": "2026-02-20",
+  "horaLlegada": "14:00",
+  "precio": 350
+}
+
+### Get viaje by ID
+GET {{baseUrl}}/viajes/:id
+Authorization: Bearer {{token}}
+
+### Update viaje
+PUT {{baseUrl}}/viajes/:id
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "precio": 400,
+  "horaLlegada": "15:00"
+}
+
+### Delete viaje
+DELETE {{baseUrl}}/viajes/:id
+Authorization: Bearer {{token}}
+
+### --- VIAJES (Pasajero) ---
+
+### Search trips (Tegucigalpa → San Pedro Sula)
+GET {{baseUrl}}/viajes/buscar?origen=Tegucigalpa&destino=San Pedro Sula&fecha=2026-02-20
+Authorization: Bearer {{token}}
+
+### Get seats for trip
+GET {{baseUrl}}/viajes/:id/asientos
+Authorization: Bearer {{token}}
+
+### Get my trips (reservations)
+GET {{baseUrl}}/viajes/mis-viajes
+Authorization: Bearer {{token}}
+
+### --- RESERVAS (Pasajero) ---
+
+### Create reservation (happy path - 3 seats)
+POST {{baseUrl}}/reservas
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "idViaje": "REPLACE_WITH_VIAJE_ID",
+  "asientos": [
+    { "numeroAsiento": 1 },
+    { "numeroAsiento": 2 },
+    { "numeroAsiento": 3 }
+  ]
+}
+
+### Create reservation (error: duplicate seat in request)
+POST {{baseUrl}}/reservas
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "idViaje": "REPLACE_WITH_VIAJE_ID",
+  "asientos": [
+    { "numeroAsiento": 4 },
+    { "numeroAsiento": 4 }
+  ]
+}
+
+### Create reservation (error: already reserved seat)
+POST {{baseUrl}}/reservas
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "idViaje": "REPLACE_WITH_VIAJE_ID",
+  "asientos": [
+    { "numeroAsiento": 1 }
+  ]
+}
+
+### Create reservation (error: seat out of range)
+POST {{baseUrl}}/reservas
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "idViaje": "REPLACE_WITH_VIAJE_ID",
+  "asientos": [
+    { "numeroAsiento": 99 }
+  ]
+}
+
+### Create reservation (error: empty asientos array)
+POST {{baseUrl}}/reservas
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "idViaje": "REPLACE_WITH_VIAJE_ID",
+  "asientos": []
+}

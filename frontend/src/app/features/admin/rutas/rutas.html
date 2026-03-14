@@ -1,0 +1,75 @@
+<div class="bg-surface-0 rounded-xl shadow-sm overflow-x-auto">
+  <div class="flex items-center justify-between px-5 py-4 border-b border-surface">
+    <h2 class="m-0 text-xl font-semibold">Gestión de Rutas</h2>
+    <p-button label="Nueva Ruta" icon="pi pi-plus" (onClick)="openNew()" />
+  </div>
+
+  <p-table
+    [value]="rutas()"
+    [loading]="loading()"
+    [paginator]="true"
+    [rows]="10"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} rutas"
+    dataKey="_id"
+    [rowHover]="true"
+    [stripedRows]="true"
+  >
+    <ng-template #header>
+      <tr>
+        <th pSortableColumn="origen">Origen <p-sortIcon field="origen" /></th>
+        <th pSortableColumn="destino">Destino <p-sortIcon field="destino" /></th>
+        <th pSortableColumn="createdAt">Fecha Creación <p-sortIcon field="createdAt" /></th>
+        <th>Acciones</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-ruta>
+      <tr>
+        <td>{{ ruta.origen }}</td>
+        <td>{{ ruta.destino }}</td>
+        <td>{{ ruta.createdAt | date:'dd/MM/yyyy' }}</td>
+        <td>
+          <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info" (onClick)="editRuta(ruta)" />
+          <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="deleteRuta(ruta)" />
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="4" class="text-center p-4">No hay rutas registradas.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-dialog
+  [header]="isEdit() ? 'Editar Ruta' : 'Nueva Ruta'"
+  [(visible)]="showDialog"
+  [modal]="true"
+  [style]="{ width: '450px' }"
+  [closable]="true"
+>
+  <form [formGroup]="form" (ngSubmit)="saveRuta()" class="flex flex-col gap-6 pt-4">
+    <p-floatlabel variant="on">
+      <input pInputText id="origen" formControlName="origen" class="w-full" />
+      <label for="origen">Origen</label>
+    </p-floatlabel>
+
+    <div>
+      <p-floatlabel variant="on">
+        <input pInputText id="destino" formControlName="destino" class="w-full" />
+        <label for="destino">Destino</label>
+      </p-floatlabel>
+      @if (form.hasError('origenIgualDestino')) {
+        <small class="text-red-500">El origen y destino no pueden ser iguales.</small>
+      }
+    </div>
+  </form>
+
+  <ng-template #footer>
+    <p-button label="Cancelar" [text]="true" severity="secondary" (onClick)="showDialog.set(false)" />
+    <p-button label="Guardar" icon="pi pi-check" (onClick)="saveRuta()" [disabled]="form.invalid" [loading]="saving()" />
+  </ng-template>
+</p-dialog>
+
+<p-confirmdialog />

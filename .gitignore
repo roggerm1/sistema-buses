@@ -1,0 +1,27 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Backend
+backend/.env
+backend/dist/
+
+# Frontend
+frontend/dist/
+frontend/.angular/
+
+# Firebase
+firebase-debug.log
+
+# Docker
+mongo-data/

@@ -1,0 +1,65 @@
+<div class="flex items-center justify-center" style="min-height: 100vh">
+  <p-card [style]="{ width: '400px' }">
+    <ng-template #header>
+      <div class="text-center pt-6 px-6">
+        <h2 class="text-2xl font-bold m-0">Iniciar Sesión</h2>
+        <p class="text-muted-color mt-2">Ingresá tus credenciales para continuar</p>
+      </div>
+    </ng-template>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-5">
+      <div class="flex flex-col gap-1">
+        <p-floatlabel variant="on">
+          <input
+            pInputText
+            id="correo"
+            formControlName="correo"
+            class="w-full"
+            [class.ng-invalid]="form.controls.correo.invalid && form.controls.correo.touched"
+            [class.ng-dirty]="form.controls.correo.touched"
+          />
+          <label for="correo">Correo electrónico</label>
+        </p-floatlabel>
+        @if (form.controls.correo.touched) {
+          @if (form.controls.correo.hasError('required')) {
+            <small class="text-red-500">El correo es requerido</small>
+          } @else if (form.controls.correo.hasError('email')) {
+            <small class="text-red-500">Correo inválido</small>
+          }
+        }
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <p-floatlabel variant="on">
+          <p-password
+            id="clave"
+            formControlName="clave"
+            [feedback]="false"
+            [toggleMask]="true"
+            fluid
+            [invalid]="form.controls.clave.invalid && form.controls.clave.touched"
+          />
+          <label for="clave">Clave</label>
+        </p-floatlabel>
+        @if (form.controls.clave.touched && form.controls.clave.hasError('required')) {
+          <small class="text-red-500">La clave es requerida</small>
+        }
+      </div>
+
+      <p-button
+        type="submit"
+        label="Iniciar Sesión"
+        [loading]="loading()"
+        class="w-full"
+        styleClass="w-full"
+      />
+    </form>
+
+    <ng-template #footer>
+      <div class="text-center">
+        <span class="text-muted-color">¿No tenés cuenta? </span>
+        <a routerLink="/register" class="font-semibold no-underline text-primary">Registrate</a>
+      </div>
+    </ng-template>
+  </p-card>
+</div>

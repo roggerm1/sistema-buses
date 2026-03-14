@@ -1,0 +1,126 @@
+<div class="flex items-center justify-center" style="min-height: 100vh">
+  <p-card [style]="{ width: '450px' }">
+    <ng-template #header>
+      <div class="text-center pt-6 px-6">
+        <h2 class="text-2xl font-bold m-0">Crear Cuenta</h2>
+        <p class="text-muted-color mt-2">Completá tus datos para registrarte</p>
+      </div>
+    </ng-template>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-5">
+      <div class="flex gap-4">
+        <div class="flex flex-col gap-1 flex-1">
+          <p-floatlabel variant="on">
+            <input
+              pInputText
+              id="nombres"
+              formControlName="nombres"
+              class="w-full"
+              [class.ng-invalid]="form.controls.nombres.invalid && form.controls.nombres.touched"
+              [class.ng-dirty]="form.controls.nombres.touched"
+            />
+            <label for="nombres">Nombres</label>
+          </p-floatlabel>
+          @if (form.controls.nombres.touched && form.controls.nombres.hasError('required')) {
+            <small class="text-red-500">Los nombres son requeridos</small>
+          }
+        </div>
+
+        <div class="flex flex-col gap-1 flex-1">
+          <p-floatlabel variant="on">
+            <input
+              pInputText
+              id="apellidos"
+              formControlName="apellidos"
+              class="w-full"
+              [class.ng-invalid]="form.controls.apellidos.invalid && form.controls.apellidos.touched"
+              [class.ng-dirty]="form.controls.apellidos.touched"
+            />
+            <label for="apellidos">Apellidos</label>
+          </p-floatlabel>
+          @if (form.controls.apellidos.touched && form.controls.apellidos.hasError('required')) {
+            <small class="text-red-500">Los apellidos son requeridos</small>
+          }
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <p-floatlabel variant="on">
+          <input
+            pInputText
+            id="reg-correo"
+            formControlName="correo"
+            class="w-full"
+            [class.ng-invalid]="form.controls.correo.invalid && form.controls.correo.touched"
+            [class.ng-dirty]="form.controls.correo.touched"
+          />
+          <label for="reg-correo">Correo electrónico</label>
+        </p-floatlabel>
+        @if (form.controls.correo.touched) {
+          @if (form.controls.correo.hasError('required')) {
+            <small class="text-red-500">El correo es requerido</small>
+          } @else if (form.controls.correo.hasError('email')) {
+            <small class="text-red-500">Correo inválido</small>
+          }
+        }
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <p-floatlabel variant="on">
+          <p-password
+            id="reg-clave"
+            formControlName="clave"
+            [feedback]="true"
+            [toggleMask]="true"
+            fluid
+            [invalid]="form.controls.clave.invalid && form.controls.clave.touched"
+          />
+          <label for="reg-clave">Clave</label>
+        </p-floatlabel>
+        @if (form.controls.clave.touched) {
+          @if (form.controls.clave.hasError('required')) {
+            <small class="text-red-500">La clave es requerida</small>
+          } @else if (form.controls.clave.hasError('minlength')) {
+            <small class="text-red-500">Mínimo 6 caracteres</small>
+          }
+        }
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <p-floatlabel variant="on">
+          <p-password
+            id="confirmarClave"
+            formControlName="confirmarClave"
+            [feedback]="false"
+            [toggleMask]="true"
+            fluid
+            [invalid]="form.controls.confirmarClave.invalid && form.controls.confirmarClave.touched"
+          />
+          <label for="confirmarClave">Confirmar clave</label>
+        </p-floatlabel>
+        @if (form.controls.confirmarClave.touched) {
+          @if (form.controls.confirmarClave.hasError('required')) {
+            <small class="text-red-500">Confirmá tu clave</small>
+          } @else if (form.controls.confirmarClave.hasError('passwordMismatch')) {
+            <small class="text-red-500">Las claves no coinciden</small>
+          }
+        }
+      </div>
+
+      <p-button
+        type="submit"
+        label="Crear Cuenta"
+        [loading]="loading()"
+        class="w-full"
+        styleClass="w-full"
+      />
+    </form>
+
+    <ng-template #footer>
+      <div class="text-center">
+        <span class="text-muted-color">¿Ya tenés cuenta? </span>
+        <a routerLink="/login" class="font-semibold no-underline text-primary">Iniciá sesión</a>
+      </div>
+    </ng-template>
+  </p-card>
+</div>

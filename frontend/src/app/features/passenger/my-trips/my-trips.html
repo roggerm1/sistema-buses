@@ -1,0 +1,70 @@
+<div class="bg-surface-0 rounded-xl shadow-sm overflow-x-auto">
+  <div class="flex items-center justify-between px-5 py-4 border-b border-surface">
+    <h2 class="m-0 text-xl font-semibold">Mis Viajes</h2>
+  </div>
+
+  <p-table [value]="reservas()" dataKey="_id" [paginator]="true" [rows]="10"
+    [loading]="loading()" [rowHover]="true" [expandedRowKeys]="expandedRows"
+    [showCurrentPageReport]="true"
+    [stripedRows]="true"
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} reservas">
+
+    <ng-template #header>
+      <tr>
+        <th style="width: 3rem"></th>
+        <th>Ruta</th>
+        <th>Fecha Viaje</th>
+        <th>Hora</th>
+        <th>Bus</th>
+        <th>Asientos</th>
+        <th>Monto Total</th>
+        <th>Fecha Reserva</th>
+        <th>Acciones</th>
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-reserva let-expanded="expanded">
+      <tr>
+        <td>
+          <p-button type="button"
+            [pRowToggler]="reserva"
+            [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
+            [text]="true" [rounded]="true" />
+        </td>
+        <td>{{ reserva.rutaOrigen }} → {{ reserva.rutaDestino }}</td>
+        <td>{{ reserva.fechaSalida | date:'dd/MM/yyyy' }}</td>
+        <td>{{ reserva.horaSalida }}</td>
+        <td>{{ reserva.busNombre }}</td>
+        <td>{{ reserva.asientosReservados }}</td>
+        <td>{{ reserva.montoTotal | currency }}</td>
+        <td>{{ reserva.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+        <td>
+          <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="danger"
+            [disabled]="!canCancel(reserva)"
+            [pTooltip]="!canCancel(reserva) ? 'Viaje ya partió' : 'Cancelar reserva'"
+            (onClick)="cancelReserva(reserva)" />
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template #expandedrow let-reserva>
+      <tr>
+        <td colspan="9">
+          <div class="p-4">
+            <strong>Asientos reservados:</strong>
+            @for (d of reserva.detalles; track d.numeroAsiento) {
+              <p-tag [value]="'#' + d.numeroAsiento" class="ml-2" />
+            }
+            <span class="ml-4">Precio unitario: {{ reserva.precioUnitario | currency }}</span>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template #emptymessage>
+      <tr><td colspan="9" class="text-center p-4">No tenés reservas aún.</td></tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-confirmdialog />

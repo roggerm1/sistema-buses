@@ -1,0 +1,144 @@
+<div class="bg-surface-0 rounded-xl shadow-sm overflow-x-auto">
+  <div class="flex items-center justify-between px-5 py-4 border-b border-surface">
+    <h2 class="m-0 text-xl font-semibold">Buscar Viajes</h2>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="search()" class="flex flex-wrap items-end gap-4 px-5 py-4">
+    <p-floatlabel variant="on" class="flex-1 min-w-48">
+      <p-select
+        id="origen"
+        formControlName="origen"
+        [options]="origenes()"
+        appendTo="body"
+        styleClass="w-full"
+      />
+      <label for="origen">Origen</label>
+    </p-floatlabel>
+
+    <p-floatlabel variant="on" class="flex-1 min-w-48">
+      <p-select
+        id="destino"
+        formControlName="destino"
+        [options]="destinosFiltrados()"
+        appendTo="body"
+        styleClass="w-full"
+      />
+      <label for="destino">Destino</label>
+    </p-floatlabel>
+
+    <p-floatlabel variant="on" class="flex-1 min-w-48">
+      <p-datepicker
+        id="fechaSalida"
+        formControlName="fechaSalida"
+        dateFormat="dd/mm/yy"
+        [minDate]="today"
+        appendTo="body"
+        styleClass="w-full"
+      />
+      <label for="fechaSalida">Fecha de Salida</label>
+    </p-floatlabel>
+
+    <p-button
+      type="submit"
+      label="Buscar"
+      icon="pi pi-search"
+      [disabled]="form.invalid"
+      [loading]="loading()"
+    />
+  </form>
+</div>
+
+@if (searched()) {
+  <div class="bg-surface-0 rounded-xl shadow-sm overflow-x-auto mt-5">
+    <p-table
+      [value]="resultados()"
+      [loading]="loading()"
+      [paginator]="true"
+      [rows]="10"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} viajes"
+      dataKey="_id"
+      [rowHover]="true"
+      [stripedRows]="true"
+    >
+      <ng-template #header>
+        <tr>
+          <th pSortableColumn="busNombre">Bus <p-sortIcon field="busNombre" /></th>
+          <th>Ruta</th>
+          <th pSortableColumn="horaSalida">Hora Salida <p-sortIcon field="horaSalida" /></th>
+          <th pSortableColumn="horaLlegada">Hora Llegada <p-sortIcon field="horaLlegada" /></th>
+          <th pSortableColumn="precio">Precio <p-sortIcon field="precio" /></th>
+          <th pSortableColumn="asientosDisponibles">Asientos Disp. <p-sortIcon field="asientosDisponibles" /></th>
+          <th>Acciones</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-viaje>
+        <tr>
+          <td>{{ viaje.busNombre }}</td>
+          <td>{{ viaje.rutaOrigen }} → {{ viaje.rutaDestino }}</td>
+          <td>{{ viaje.horaSalida }}</td>
+          <td>{{ viaje.horaLlegada }}</td>
+          <td>{{ viaje.precio | currency }}</td>
+          <td>{{ viaje.asientosDisponibles }} / {{ viaje.totalAsientos }}</td>
+          <td>
+            <p-button label="Reservar" icon="pi pi-ticket" [rounded]="true" size="small" (onClick)="openSeatDialog(viaje)" [disabled]="viaje.completo" />
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="7" class="text-center p-4">No se encontraron viajes para esta búsqueda.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+}
+
+<!-- Seat Selection Dialog -->
+<p-dialog header="Seleccionar Asientos" [(visible)]="seatDialogVisible" [modal]="true" [style]="{ width: '500px' }">
+  @if (selectedViaje(); as viaje) {
+    <div class="mb-4">
+      <p class="font-bold text-lg m-0">{{ viaje.busNombre }}</p>
+      <p class="m-0 mt-1">{{ viaje.rutaOrigen }} → {{ viaje.rutaDestino }}</p>
+      <p class="m-0 mt-1">{{ viaje.horaSalida }} - {{ viaje.horaLlegada }}</p>
+      <p class="m-0 mt-1">Precio por asiento: {{ viaje.precio | currency }}</p>
+    </div>
+
+    <!-- Seat grid -->
+    <div class="seat-grid">
+      @for (seat of seats(); track seat.numeroAsiento) {
+        <button
+          class="seat"
+          [class.reserved]="seat.reservado"
+          [class.selected]="selectedSeats().has(seat.numeroAsiento)"
+          [disabled]="seat.reservado"
+          (click)="toggleSeat(seat.numeroAsiento)"
+        >
+          {{ seat.numeroAsiento }}
+        </button>
+        @if (seat.numeroAsiento % 4 === 2) {
+          <div class="aisle"></div>
+        }
+      }
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+      <span class="legend-item"><span class="seat-dot available"></span> Disponible</span>
+      <span class="legend-item"><span class="seat-dot selected"></span> Seleccionado</span>
+      <span class="legend-item"><span class="seat-dot reserved"></span> Reservado</span>
+    </div>
+
+    <!-- Summary + confirm -->
+    <div class="flex justify-between items-center mt-4">
+      <span>{{ selectedSeats().size }} asiento(s) — Total: {{ totalPrice() | currency }}</span>
+      <p-button
+        label="Confirmar Reserva"
+        icon="pi pi-check"
+        [disabled]="selectedSeats().size === 0"
+        [loading]="reserving()"
+        (onClick)="confirmReservation()"
+      />
+    </div>
+  }
+</p-dialog>

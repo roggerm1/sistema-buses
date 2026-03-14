@@ -1,0 +1,91 @@
+<div class="bg-surface-0 rounded-xl shadow-sm overflow-x-auto">
+  <div class="flex items-center justify-between px-5 py-4 border-b border-surface">
+    <h2 class="m-0 text-xl font-semibold">Gestión de Buses</h2>
+    <p-button label="Nuevo Bus" icon="pi pi-plus" (onClick)="openNew()" />
+  </div>
+
+  <p-table
+    [value]="buses()"
+    [loading]="loading()"
+    [paginator]="true"
+    [rows]="10"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} buses"
+    dataKey="_id"
+    [rowHover]="true"
+    [stripedRows]="true"
+  >
+    <ng-template #header>
+      <tr>
+        <th pSortableColumn="numeroPlaca">Placa <p-sortIcon field="numeroPlaca" /></th>
+        <th pSortableColumn="nombre">Nombre <p-sortIcon field="nombre" /></th>
+        <th pSortableColumn="capacidad">Capacidad <p-sortIcon field="capacidad" /></th>
+        <th>Asientos</th>
+        <th pSortableColumn="disponible">Disponible <p-sortIcon field="disponible" /></th>
+        <th pSortableColumn="createdAt">Fecha Creación <p-sortIcon field="createdAt" /></th>
+        <th>Acciones</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-bus>
+      <tr>
+        <td>{{ bus.numeroPlaca }}</td>
+        <td>{{ bus.nombre }}</td>
+        <td>{{ bus.capacidad }}</td>
+        <td><i class="pi pi-users mr-2"></i>{{ bus.asientos.length }}</td>
+        <td>
+          <p-tag
+            [value]="bus.disponible ? 'Sí' : 'No'"
+            [severity]="bus.disponible ? 'success' : 'danger'"
+          />
+        </td>
+        <td>{{ bus.createdAt | date:'dd/MM/yyyy' }}</td>
+        <td>
+          <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info" (onClick)="editBus(bus)" />
+          <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="deleteBus(bus)" />
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="7" class="text-center p-4">No hay buses registrados.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-dialog
+  [header]="isEdit() ? 'Editar Bus' : 'Nuevo Bus'"
+  [(visible)]="showDialog"
+  [modal]="true"
+  [style]="{ width: '450px' }"
+  [closable]="true"
+>
+  <form [formGroup]="form" (ngSubmit)="saveBus()" class="flex flex-col gap-6 pt-4">
+    <p-floatlabel variant="on">
+      <input pInputText id="numeroPlaca" formControlName="numeroPlaca" class="w-full" />
+      <label for="numeroPlaca">Número de Placa</label>
+    </p-floatlabel>
+
+    <p-floatlabel variant="on">
+      <input pInputText id="nombre" formControlName="nombre" class="w-full" />
+      <label for="nombre">Nombre</label>
+    </p-floatlabel>
+
+    <p-floatlabel variant="on">
+      <p-inputnumber id="capacidad" formControlName="capacidad" [min]="1" [max]="15" [showButtons]="true" class="w-full" />
+      <label for="capacidad">Capacidad</label>
+    </p-floatlabel>
+
+    <div class="flex items-center gap-2">
+      <p-toggleswitch formControlName="disponible" inputId="disponible" />
+      <label for="disponible">Disponible</label>
+    </div>
+  </form>
+
+  <ng-template #footer>
+    <p-button label="Cancelar" [text]="true" severity="secondary" (onClick)="showDialog.set(false)" />
+    <p-button label="Guardar" icon="pi pi-check" (onClick)="saveBus()" [disabled]="form.invalid" [loading]="saving()" />
+  </ng-template>
+</p-dialog>
+
+<p-confirmdialog />

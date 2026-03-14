@@ -1,0 +1,185 @@
+<div class="bg-surface-0 rounded-xl shadow-sm overflow-x-auto">
+  <div class="flex items-center justify-between px-5 py-4 border-b border-surface">
+    <h2 class="m-0 text-xl font-semibold">Gestión de Viajes</h2>
+    <p-button label="Nuevo Viaje" icon="pi pi-plus" (onClick)="openNew()" />
+  </div>
+
+  <p-table
+    [value]="viajes()"
+    [loading]="loading()"
+    [paginator]="true"
+    [rows]="10"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} viajes"
+    dataKey="_id"
+    [rowHover]="true"
+    [stripedRows]="true"
+  >
+    <ng-template #header>
+      <tr>
+        <th pSortableColumn="busNombre">Bus <p-sortIcon field="busNombre" /></th>
+        <th>Ruta</th>
+        <th pSortableColumn="fechaSalida">Fecha Salida <p-sortIcon field="fechaSalida" /></th>
+        <th pSortableColumn="horaSalida">Hora Salida <p-sortIcon field="horaSalida" /></th>
+        <th pSortableColumn="fechaLlegada">Fecha Llegada <p-sortIcon field="fechaLlegada" /></th>
+        <th pSortableColumn="horaLlegada">Hora Llegada <p-sortIcon field="horaLlegada" /></th>
+        <th pSortableColumn="precio">Precio <p-sortIcon field="precio" /></th>
+        <th pSortableColumn="asientosDisponibles">Asientos <p-sortIcon field="asientosDisponibles" /></th>
+        <th pSortableColumn="completo">Completo <p-sortIcon field="completo" /></th>
+        <th>Acciones</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-viaje>
+      <tr>
+        <td>{{ viaje.busNombre }}</td>
+        <td>{{ viaje.rutaOrigen }} → {{ viaje.rutaDestino }}</td>
+        <td>{{ viaje.fechaSalida | date:'dd/MM/yyyy' }}</td>
+        <td>{{ viaje.horaSalida }}</td>
+        <td>{{ viaje.fechaLlegada | date:'dd/MM/yyyy' }}</td>
+        <td>{{ viaje.horaLlegada }}</td>
+        <td>{{ viaje.precio | currency }}</td>
+        <td>{{ viaje.asientosDisponibles }} / {{ viaje.totalAsientos }}</td>
+        <td>
+          <p-tag [value]="viaje.completo ? 'Sí' : 'No'" [severity]="viaje.completo ? 'danger' : 'success'" />
+        </td>
+        <td>
+          <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="secondary"
+            pTooltip="Ver Reservas"
+            (onClick)="viewReservas(viaje)" />
+          <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info"
+            [disabled]="!canModify(viaje)"
+            [pTooltip]="!canModify(viaje) ? 'Viaje con reservas' : ''"
+            (onClick)="editViaje(viaje)" />
+          <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger"
+            [disabled]="!canModify(viaje)"
+            [pTooltip]="!canModify(viaje) ? 'Viaje con reservas' : ''"
+            (onClick)="deleteViaje(viaje)" />
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="10" class="text-center p-4">No hay viajes registrados.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-dialog
+  [header]="isEdit() ? 'Editar Viaje' : 'Nuevo Viaje'"
+  [(visible)]="showDialog"
+  [modal]="true"
+  [style]="{ width: '650px' }"
+  [closable]="true"
+>
+  <form [formGroup]="form" (ngSubmit)="saveViaje()" class="flex flex-col gap-6 pt-4">
+    <p-floatlabel variant="on">
+      <p-select
+        id="idBus"
+        formControlName="idBus"
+        [options]="buses()"
+        optionLabel="nombre"
+        optionValue="_id"
+        placeholder="Seleccionar bus"
+        styleClass="w-full"
+      />
+      <label for="idBus">Bus</label>
+    </p-floatlabel>
+    @if (selectedBusCapacidad() !== null) {
+      <small class="-mt-4 text-surface-500">Capacidad: {{ selectedBusCapacidad() }} asientos</small>
+    }
+
+    <p-floatlabel variant="on">
+      <p-select
+        id="idRuta"
+        formControlName="idRuta"
+        [options]="rutaOptions()"
+        optionLabel="displayLabel"
+        optionValue="_id"
+        placeholder="Seleccionar ruta"
+        styleClass="w-full"
+      />
+      <label for="idRuta">Ruta</label>
+    </p-floatlabel>
+
+    <div class="flex gap-4">
+      <div class="flex-1 flex flex-col gap-2">
+        <label for="fechaSalida">Fecha Salida</label>
+        <p-datepicker id="fechaSalida" formControlName="fechaSalida" dateFormat="dd/mm/yy" appendTo="body" [minDate]="today" styleClass="w-full" />
+      </div>
+      <div class="flex-1 flex flex-col gap-2">
+        <label for="horaSalida">Hora Salida</label>
+        <input pInputText id="horaSalida" formControlName="horaSalida" placeholder="HH:MM" class="w-full" />
+      </div>
+    </div>
+
+    <div class="flex gap-4">
+      <div class="flex-1 flex flex-col gap-2">
+        <label for="fechaLlegada">Fecha Llegada</label>
+        <p-datepicker id="fechaLlegada" formControlName="fechaLlegada" dateFormat="dd/mm/yy" appendTo="body" [minDate]="form.get('fechaSalida')?.value || today" styleClass="w-full" />
+      </div>
+      <div class="flex-1 flex flex-col gap-2">
+        <label for="horaLlegada">Hora Llegada</label>
+        <input pInputText id="horaLlegada" formControlName="horaLlegada" placeholder="HH:MM" class="w-full" />
+      </div>
+    </div>
+
+    <p-floatlabel variant="on">
+      <p-inputnumber id="precio" formControlName="precio" [min]="0" mode="decimal" styleClass="w-full" />
+      <label for="precio">Precio</label>
+    </p-floatlabel>
+  </form>
+
+  <ng-template #footer>
+    <p-button label="Cancelar" [text]="true" severity="secondary" (onClick)="showDialog.set(false)" />
+    <p-button label="Guardar" icon="pi pi-check" (onClick)="saveViaje()" [disabled]="form.invalid" [loading]="saving()" />
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  header="Reservas"
+  [(visible)]="showReservasDialog"
+  [modal]="true"
+  [style]="{ width: '750px' }"
+  [closable]="true"
+>
+  <p class="mt-0 mb-4 text-surface-500">{{ reservasViajeLabel() }}</p>
+
+  <p-table
+    [value]="reservasViaje()"
+    [loading]="reservasLoading()"
+    [rowHover]="true"
+    [stripedRows]="true"
+    dataKey="_id"
+  >
+    <ng-template #header>
+      <tr>
+        <th>Pasajero</th>
+        <th>Correo</th>
+        <th>Asientos</th>
+        <th>Monto</th>
+        <th>Fecha Reserva</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-reserva>
+      <tr>
+        <td>{{ reserva.idPasajero.nombres }} {{ reserva.idPasajero.apellidos }}</td>
+        <td>{{ reserva.idPasajero.correo }}</td>
+        <td>
+          @for (d of reserva.detalles; track d.numeroAsiento) {
+            <p-tag [value]="'#' + d.numeroAsiento" class="mr-1" />
+          }
+        </td>
+        <td>{{ reserva.montoTotal | currency }}</td>
+        <td>{{ reserva.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="5" class="text-center p-4">No hay reservas para este viaje.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-dialog>
+
+<p-confirmdialog />
